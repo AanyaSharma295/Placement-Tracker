@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  name      String?
+  email     String   @unique
+  image     String?
+  createdAt DateTime @default(now())
+
+  handles         Handles?
+  contestHistory  ContestHistory[]
+  contestStats    ContestStats[]
+  leetcodeStats   LeetcodeStats?
+  xp              XP[]
+  badges          UserBadge[]
+  questionProgress QuestionProgress[]
+}
+
+model Handles {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  codeforces  String?
+  leetcode    String?
+  atcoder     String?
+  hackerrank  String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ContestHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  platform    String
+  contestId   String
+  contestName String
+  rating      Int
+  rank        Int
+  date        DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ContestStats {
+  id            String @id @default(cuid())
+  userId        String
+  platform      String
+  currentRating Int
+  maxRating     Int
+  contestCount  Int
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model LeetcodeStats {
+  id          String @id @default(cuid())
+  userId      String @unique
+  easy        Int    @default(0)
+  medium      Int    @default(0)
+  hard        Int    @default(0)
+  totalSolved Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model XP {
+  id     String @id @default(cuid())
+  userId String
+  points Int
+  reason String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id      String @id @default(cuid())
+  userId  String
+  badgeId String
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+}
+
+model Question {
+  id         String @id @default(cuid())
+  title      String
+  difficulty String
+  topic      String
+  link       String
+
+  companies        CompanyQuestion[]
+  questionProgress QuestionProgress[]
+}
+
+model Company {
+  id        String @id @default(cuid())
+  name      String
+
+  questions CompanyQuestion[]
+}
+
+model CompanyQuestion {
+  companyId  String
+  questionId String
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@id([companyId, questionId])
+}
+
+model QuestionProgress {
+  userId     String
+  questionId String
+  status     String @default("NOT_STARTED")
+
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@id([userId, questionId])
+}
+
+model RevisionTopic {
+  id      String @id @default(cuid())
+  subject String
+  title   String
+  content String
+}

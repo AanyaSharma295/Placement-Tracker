@@ -44,3 +44,4 @@ next-env.d.ts
 tests/
 .env.local
 .env*
+/lib/generated/prisma
