@@ -46,15 +46,18 @@ model ContestHistory {
   date        DateTime
 
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, contestId, platform])
 }
 
 model ContestStats {
-  id            String @id @default(cuid())
+  id            String    @id @default(cuid())
   userId        String
   platform      String
   currentRating Int
   maxRating     Int
   contestCount  Int
+  lastSyncedAt  DateTime?
 
   user User @relation(fields: [userId], references: [id])
 }

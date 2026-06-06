@@ -96,9 +96,12 @@ export default function CodeforcesDashboard() {
   const { user: clerkUser, isLoaded } = useUser();
   const [data, setData] = useState<CFDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cfHandle, setCfHandle] = useState<string | null>(null);
+  const [lastSynced, setLastSynced] = useState<string | null>(null);
 
+  // Step 1 — load handle from DB
   useEffect(() => {
     if (!isLoaded || !clerkUser) return;
 
@@ -123,31 +126,62 @@ export default function CodeforcesDashboard() {
     loadHandle();
   }, [isLoaded, clerkUser]);
 
+  // Step 2 — once handle is known, sync then fetch
   useEffect(() => {
     if (!cfHandle) return;
-
-    async function fetchDashboard() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          `/api/codeforces/${encodeURIComponent(cfHandle!)}`
-        );
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(json.error ?? "Failed to fetch Codeforces data.");
-        }
-        setData(json);
-      } catch (e: any) {
-        setError(e.message ?? "An unexpected error occurred.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDashboard();
+    syncAndFetch();
   }, [cfHandle]);
 
+  async function syncAndFetch() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Trigger sync (respects 1 hour freshness internally)
+      await fetch("/api/codeforces/sync", { method: "POST" });
+
+      // Fetch live data for display
+      const res = await fetch(
+        `/api/codeforces/${encodeURIComponent(cfHandle!)}`
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to fetch Codeforces data.");
+      setData(json);
+      setLastSynced(new Date().toLocaleTimeString());
+    } catch (e: any) {
+      setError(e.message ?? "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRefresh() {
+    if (!cfHandle || syncing) return;
+    setSyncing(true);
+    setError(null);
+
+    try {
+      // Force sync by calling sync endpoint
+      const syncRes = await fetch("/api/codeforces/sync", { method: "POST" });
+      const syncJson = await syncRes.json();
+      if (!syncRes.ok) throw new Error(syncJson.error ?? "Sync failed.");
+
+      // Refetch display data
+      const res = await fetch(
+        `/api/codeforces/${encodeURIComponent(cfHandle!)}`
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to fetch data.");
+      setData(json);
+      setLastSynced(new Date().toLocaleTimeString());
+    } catch (e: any) {
+      setError(e.message ?? "Refresh failed.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  // Loading state
   if (!isLoaded || loading) {
     return (
       <main className="min-h-screen bg-[#060e06] px-4 py-10 md:px-10">
@@ -169,6 +203,7 @@ export default function CodeforcesDashboard() {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <main className="min-h-screen bg-[#060e06] flex items-center justify-center px-4">
@@ -176,9 +211,7 @@ export default function CodeforcesDashboard() {
           <h2 className="mb-3 text-xl font-bold text-[#f5c6c6]">
             Something went wrong
           </h2>
-          <p className="text-sm text-[#8a5a5a] leading-relaxed">
-            {error}
-          </p>
+          <p className="text-sm text-[#8a5a5a] leading-relaxed">{error}</p>
           
           <a
             href="/profile"
@@ -190,7 +223,7 @@ export default function CodeforcesDashboard() {
       </main>
     );
   }
-    
+
   if (!data) return null;
 
   const { user, stats, recentContests, ratingGraph } = data;
@@ -211,6 +244,11 @@ export default function CodeforcesDashboard() {
             <span className="text-xs uppercase tracking-widest text-[#4a6a4a]">
               Codeforces · Live
             </span>
+            {lastSynced && (
+              <span className="text-xs text-[#3a5a3a]">
+                · Synced at {lastSynced}
+              </span>
+            )}
           </div>
           <h1 className="text-3xl font-black text-[#e8f5e8] tracking-tight">
             {user.handle}
@@ -222,15 +260,24 @@ export default function CodeforcesDashboard() {
             </span>
           </h1>
         </div>
-        
-        <a
-          href={`https://codeforces.com/profile/${user.handle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-xl border border-[#1e3a1e] bg-[#0a1a0a] px-5 py-2.5 text-sm font-medium text-[#a8ff78] transition hover:bg-[#a8ff78]/10"
-        >
-          View on Codeforces
-        </a>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={syncing}
+            className="rounded-xl border border-[#1e3a1e] bg-[#0a1a0a] px-5 py-2.5 text-sm font-medium text-[#a8ff78] transition hover:bg-[#a8ff78]/10 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {syncing ? "Syncing..." : "Refresh"}
+          </button>
+          
+          <a
+            href={`https://codeforces.com/profile/${user.handle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl border border-[#1e3a1e] bg-[#0a1a0a] px-5 py-2.5 text-sm font-medium text-[#a8ff78] transition hover:bg-[#a8ff78]/10"
+          >
+            View on Codeforces
+          </a>
+        </div>
       </header>
 
       {/* Card 1 — Profile Summary */}
@@ -257,23 +304,11 @@ export default function CodeforcesDashboard() {
           <div className="flex-1 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <StatBadge label="Current Rating" value={user.rating} accent />
             <StatBadge label="Max Rating" value={user.maxRating} />
-            <StatBadge
-              label="Current Rank"
-              value={user.rank}
-              color={ratingCol}
-            />
-            <StatBadge
-              label="Max Rank"
-              value={user.maxRank}
-              color={maxRatingCol}
-            />
+            <StatBadge label="Current Rank" value={user.rank} color={ratingCol} />
+            <StatBadge label="Max Rank" value={user.maxRank} color={maxRatingCol} />
             <StatBadge
               label="Contribution"
-              value={
-                user.contribution >= 0
-                  ? `+${user.contribution}`
-                  : user.contribution
-              }
+              value={user.contribution >= 0 ? `+${user.contribution}` : user.contribution}
             />
           </div>
         </div>
@@ -304,9 +339,7 @@ export default function CodeforcesDashboard() {
               </p>
               <p
                 className={`text-2xl font-black tabular-nums ${
-                  stats.averageRatingChange >= 0
-                    ? "text-[#a8ff78]"
-                    : "text-red-400"
+                  stats.averageRatingChange >= 0 ? "text-[#a8ff78]" : "text-red-400"
                 }`}
               >
                 {stats.averageRatingChange >= 0 ? "+" : ""}
