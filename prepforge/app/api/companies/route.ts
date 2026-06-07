@@ -46,6 +46,16 @@ export async function GET() {
             ? Math.round((solvedCount / totalQuestions) * 100)
             : 0;
 
+        const easy = company.questions.filter(
+          (q) => q.question.difficulty === "Easy"
+        ).length;
+        const medium = company.questions.filter(
+          (q) => q.question.difficulty === "Medium"
+        ).length;
+        const hard = company.questions.filter(
+          (q) => q.question.difficulty === "Hard"
+        ).length;
+
         return {
           id: company.id,
           name: company.name,
@@ -53,6 +63,7 @@ export async function GET() {
           totalQuestions,
           solvedQuestions: solvedCount,
           completionPercentage,
+          difficulty: { easy, medium, hard },
         };
       })
     );
