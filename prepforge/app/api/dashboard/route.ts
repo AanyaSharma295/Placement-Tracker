@@ -29,24 +29,20 @@ export async function GET() {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    // ── Codeforces data ──────────────────────────────────────────────
-    const cfStats = user.contestStats.find(
-      (s) => s.platform === "codeforces"
-    );
+    // ── Codeforces ────────────────────────────────────────────────────
+    const cfStats = user.contestStats.find((s) => s.platform === "codeforces");
     const cfHistory = user.contestHistory.filter(
       (c) => c.platform === "codeforces"
     );
 
-    const cfRatingGraph = [...cfHistory]
-      .reverse()
-      .map((c) => ({
-        date: new Date(c.date).toLocaleDateString("en-US", {
-          month: "short",
-          year: "2-digit",
-        }),
-        rating: c.rating,
-        contestName: c.contestName,
-      }));
+    const cfRatingGraph = [...cfHistory].reverse().map((c) => ({
+      date: new Date(c.date).toLocaleDateString("en-US", {
+        month: "short",
+        year: "2-digit",
+      }),
+      rating: c.rating,
+      contestName: c.contestName,
+    }));
 
     const recentCfActivity = cfHistory.slice(0, 5).map((c) => ({
       platform: "codeforces",
@@ -55,7 +51,7 @@ export async function GET() {
       date: c.date.toISOString(),
     }));
 
-    // ── LeetCode data ─────────────────────────────────────────────────
+    // ── LeetCode ──────────────────────────────────────────────────────
     const lc = user.leetcodeStats;
 
     const recentLcActivity = lc
@@ -69,18 +65,18 @@ export async function GET() {
         ]
       : [];
 
-    // ── Activity feed (merged, newest first) ──────────────────────────
+    // ── Activity feed ─────────────────────────────────────────────────
     const activity = [...recentCfActivity, ...recentLcActivity].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
-    // ── Summary stats ─────────────────────────────────────────────────
+    // ── Summary ───────────────────────────────────────────────────────
     const totalContests = cfStats?.contestCount ?? 0;
     const cfRating = cfStats?.currentRating ?? 0;
     const lcSolved = lc?.totalSolved ?? 0;
     const progressScore = Math.round(cfRating / 10) + lcSolved;
 
-    // ── Insights (rule-based) ─────────────────────────────────────────
+    // ── Insights ──────────────────────────────────────────────────────
     const insights: string[] = [];
 
     if (lc) {
@@ -90,7 +86,9 @@ export async function GET() {
         );
       }
       if (lc.totalSolved > 500) {
-        insights.push("You have solved over 500 LeetCode problems. Keep it up!");
+        insights.push(
+          "You have solved over 500 LeetCode problems. Keep it up!"
+        );
       }
       if (lc.medium > lc.easy) {
         insights.push(
@@ -119,12 +117,10 @@ export async function GET() {
     }
 
     if (insights.length === 0) {
-      insights.push(
-        "Sync your platforms to generate personalized insights."
-      );
+      insights.push("Sync your platforms to generate personalized insights.");
     }
 
-    // ── Last synced ───────────────────────────────────────────────────
+    // ── Sync times ────────────────────────────────────────────────────
     const lastCfSync = cfStats?.lastSyncedAt?.toISOString() ?? null;
     const lastLcSync = lc?.updatedAt?.toISOString() ?? null;
 
@@ -137,6 +133,8 @@ export async function GET() {
       handles: {
         codeforces: user.handles?.codeforces ?? null,
         leetcode: user.handles?.leetcode ?? null,
+        atcoder: user.handles?.atcoder ?? null,
+        hackerrank: user.handles?.hackerrank ?? null,
       },
       codeforces: {
         rating: cfRating,
