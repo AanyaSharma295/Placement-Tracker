@@ -15,13 +15,14 @@ model User {
   image     String?
   createdAt DateTime @default(now())
 
-  handles         Handles?
-  contestHistory  ContestHistory[]
-  contestStats    ContestStats[]
-  leetcodeStats   LeetcodeStats?
-  xp              XP[]
-  badges          UserBadge[]
+  handles          Handles?
+  contestHistory   ContestHistory[]
+  contestStats     ContestStats[]
+  leetcodeStats    LeetcodeStats?
+  xp               XP[]
+  badges           UserBadge[]
   questionProgress QuestionProgress[]
+  topicProgress    TopicProgress[]
 }
 
 model Handles {
@@ -113,6 +114,7 @@ model Question {
 model Company {
   id        String @id @default(cuid())
   name      String
+  slug      String @unique
 
   questions CompanyQuestion[]
 }
@@ -143,4 +145,18 @@ model RevisionTopic {
   subject String
   title   String
   content String
+  order   Int    @default(0)
+
+  progress TopicProgress[]
+}
+
+model TopicProgress {
+  userId  String
+  topicId String
+  status  String @default("NOT_STARTED")
+
+  user  User          @relation(fields: [userId], references: [id])
+  topic RevisionTopic @relation(fields: [topicId], references: [id])
+
+  @@id([userId, topicId])
 }
