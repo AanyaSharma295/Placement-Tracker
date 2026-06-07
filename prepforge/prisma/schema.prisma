@@ -63,12 +63,13 @@ model ContestStats {
 }
 
 model LeetcodeStats {
-  id          String @id @default(cuid())
-  userId      String @unique
-  easy        Int    @default(0)
-  medium      Int    @default(0)
-  hard        Int    @default(0)
-  totalSolved Int    @default(0)
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  easy        Int      @default(0)
+  medium      Int      @default(0)
+  hard        Int      @default(0)
+  totalSolved Int      @default(0)
+  updatedAt   DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
