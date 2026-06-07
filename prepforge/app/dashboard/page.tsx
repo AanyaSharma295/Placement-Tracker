@@ -17,6 +17,25 @@ import {
 } from "recharts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+interface InterviewStats {
+  questions: {
+    total: number;
+    solved: number;
+    inProgress: number;
+    completionPercentage: number;
+  };
+  companies: {
+    started: number;
+    total: number;
+  };
+  subjects: {
+    totalTopics: number;
+    completedTopics: number;
+    inProgressTopics: number;
+    completionPercentage: number;
+  };
+  overallReadiness: number;
+}
 
 interface DashboardData {
   user: { name: string; email: string; image: string };
@@ -156,19 +175,6 @@ function CFTooltip({ active, payload }: any) {
   );
 }
 
-function LCTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div
-      className="rounded-xl px-4 py-3 shadow-2xl text-sm"
-      style={{ background: "#12121f", border: "1px solid #FFA11630" }}
-    >
-      <p className="text-[#6b6b85] text-xs mb-1">{payload[0].name}</p>
-      <p className="font-bold text-[#FFA116]">{payload[0].value}</p>
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -176,11 +182,13 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [interviewStats, setInterviewStats] = useState<InterviewStats | null>(null);
   const [syncing, setSyncing] = useState<"cf" | "lc" | null>(null);
 
   useEffect(() => {
     if (!isLoaded || !clerkUser) return;
     fetchDashboard();
+    fetchInterviewStats();
   }, [isLoaded, clerkUser]);
 
   async function fetchDashboard() {
@@ -195,6 +203,16 @@ export default function Dashboard() {
       setError(e.message ?? "Something went wrong.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchInterviewStats() {
+    try {
+      const res = await fetch("/api/dashboard/interview-stats");
+      const json = await res.json();
+      if (res.ok) setInterviewStats(json);
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -342,31 +360,57 @@ export default function Dashboard() {
               <p className="text-[#6b6b85] text-sm mt-1">{getMotivation()}</p>
             </div>
           </div>
-          <div className="flex flex-col gap-2 text-xs text-[#6b6b85]">
-            <div className="flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full flex-shrink-0"
-                style={{ background: CF_GREEN }}
-              />
-              <span>
-                CF synced:{" "}
-                <span style={{ color: CF_GREEN }}>
-                  {formatSyncTime(codeforces.lastSyncedAt)}
+          
+          <div className="flex flex-col gap-3 text-xs text-[#6b6b85]">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2 w-2 rounded-full flex-shrink-0"
+                  style={{ background: CF_GREEN }}
+                />
+                <span>
+                  CF synced:{" "}
+                  <span style={{ color: CF_GREEN }}>
+                    {formatSyncTime(codeforces.lastSyncedAt)}
+                  </span>
                 </span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full flex-shrink-0"
-                style={{ background: "#FFA116" }}
-              />
-              <span>
-                LC synced:{" "}
-                <span style={{ color: "#FFA116" }}>
-                  {formatSyncTime(leetcode.lastSyncedAt)}
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2 w-2 rounded-full flex-shrink-0"
+                  style={{ background: "#FFA116" }}
+                />
+                <span>
+                  LC synced:{" "}
+                  <span style={{ color: "#FFA116" }}>
+                    {formatSyncTime(leetcode.lastSyncedAt)}
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
+
+            {/* Added Sync Buttons Implementation Map Block */}
+            <div className="flex flex-wrap gap-2 mt-1">
+              {[
+                { label: "Sync Codeforces", platform: "cf" as const, color: CF_GREEN },
+                { label: "Sync LeetCode", platform: "lc" as const, color: "#FFA116" },
+              ].map(({ label, platform, color }) => (
+                <button
+                  key={label}
+                  onClick={() => syncPlatform(platform)}
+                  disabled={syncing !== null}
+                  className="rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+                  style={{
+                    background: syncing === platform ? `${color}25` : `${color}10`,
+                    border: `1px solid ${color}25`,
+                    color,
+                  }}
+                >
+                  {syncing === platform ? "Syncing..." : label}
+                </button>
+              ))}
+            </div>
+
             <p className="text-[#6b6b85] mt-1">
               {new Date().toLocaleDateString("en-US", {
                 weekday: "long",
@@ -407,7 +451,6 @@ export default function Dashboard() {
 
         {/* ── Section 3: Platform Snapshots ─────────────────────────── */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-
           {/* Codeforces */}
           <div
             className="rounded-3xl p-6 flex flex-col gap-4"
@@ -517,7 +560,6 @@ export default function Dashboard() {
 
         {/* ── Section 4: Charts ─────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-
           {/* CF Rating Trend */}
           <section
             className="rounded-3xl p-6"
@@ -602,7 +644,6 @@ export default function Dashboard() {
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<LCTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -630,7 +671,6 @@ export default function Dashboard() {
 
         {/* ── Section 5: Activity + Insights ────────────────────────── */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-
           {/* Activity */}
           <section
             className="rounded-3xl p-6"
@@ -775,58 +815,119 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ── Section 7: Quick Actions ───────────────────────────────── */}
+        {/* ── Section 7: Interview Preparation ──────────────────────── */}
         <section
           className="rounded-3xl p-6"
-          style={{ background: "#12121f", border: `1px solid ${PF_PURPLE}20` }}
+          style={{ background: "#12121f", border: "1px solid #3B82F620" }}
         >
-          <h2 className="text-xs font-bold uppercase tracking-widest text-[#6b6b85] mb-5">
-            Quick Actions
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { label: "Update Profile", href: "/profile", color: PF_PURPLE },
-              { label: "Codeforces Dashboard", href: "/contest/codeforces", color: CF_GREEN },
-              { label: "LeetCode Dashboard", href: "/contest/leetcode", color: "#FFA116" },
-            ].map(({ label, href, color }) => (
-              <Link
-                key={label}
-                href={href}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-80"
-                style={{
-                  background: `${color}18`,
-                  border: `1px solid ${color}30`,
-                  color,
-                }}
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[#6b6b85]">
+              Interview Preparation
+            </h2>
+            {interviewStats && (
+              <span
+                className="text-xs font-bold px-3 py-1 rounded-full"
+                style={{ background: "#3B82F615", color: "#3B82F6", border: "1px solid #3B82F630" }}
               >
-                {label}
-              </Link>
-            ))}
-
-            {[
-              { label: "Sync Codeforces", platform: "cf" as const, color: CF_GREEN },
-              { label: "Sync LeetCode", platform: "lc" as const, color: "#FFA116" },
-            ].map(({ label, platform, color }) => (
-              <button
-                key={label}
-                onClick={() => syncPlatform(platform)}
-                disabled={!!syncing}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  background: syncing === platform ? `${color}25` : `${color}10`,
-                  border: `1px solid ${color}25`,
-                  color,
-                }}
-              >
-                {syncing === platform ? "Syncing..." : label}
-              </button>
-            ))}
+                {interviewStats.overallReadiness}% Ready
+              </span>
+            )}
           </div>
+
+          {!interviewStats ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: "#0a0a18" }} />
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-5">
+                {[
+                  {
+                    label: "Questions Solved",
+                    value: interviewStats.questions.solved,
+                    sub: `of ${interviewStats.questions.total} total`,
+                    color: "#3B82F6",
+                  },
+                  {
+                    label: "Companies Started",
+                    value: interviewStats.companies.started,
+                    sub: `of ${interviewStats.companies.total} companies`,
+                    color: "#60A5FA",
+                  },
+                  {
+                    label: "Topics Completed",
+                    value: interviewStats.subjects.completedTopics,
+                    sub: `of ${interviewStats.subjects.totalTopics} topics`,
+                    color: "#6366F1",
+                  },
+                  {
+                    label: "Readiness",
+                    value: `${interviewStats.overallReadiness}%`,
+                    sub: "overall score",
+                    color: "#818CF8",
+                  },
+                ].map(({ label, value, sub, color }) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl px-4 py-4 flex flex-col gap-1"
+                    style={{ background: "#0a0a18", border: `1px solid ${color}20` }}
+                  >
+                    <p className="text-[10px] uppercase tracking-widest text-[#6b6b85]">
+                      {label}
+                    </p>
+                    <p className="text-2xl font-black tabular-nums" style={{ color }}>
+                      {value}
+                    </p>
+                    <p className="text-[10px] text-[#6b6b85]">{sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Progress Bars */}
+              <div className="space-y-3 mb-5">
+                <div>
+                  <div className="flex justify-between text-xs text-[#6b6b85] mb-1.5">
+                    <span>Company Questions</span>
+                    <span style={{ color: "#3B82F6" }}>
+                      {interviewStats.questions.completionPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: "#1a1a2e" }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${interviewStats.questions.completionPercentage}%`,
+                        background: "#3B82F6",
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between text-xs text-[#6b6b85] mb-1.5">
+                    <span>Core Subject Topics</span>
+                    <span style={{ color: "#6366F1" }}>
+                      {interviewStats.subjects.completionPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: "#1a1a2e" }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${interviewStats.subjects.completionPercentage}%`,
+                        background: "#6366F1",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </section>
 
-        <p className="text-center text-[10px] text-[#2a2a3a] tracking-widest uppercase pb-4">
-          PrepForge · Your Placement Preparation Hub
-        </p>
       </div>
     </main>
   );
