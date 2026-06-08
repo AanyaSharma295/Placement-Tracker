@@ -22,7 +22,8 @@ model User {
   xp               XP[]
   badges           UserBadge[]
   questionProgress QuestionProgress[]
-  topicProgress    TopicProgress[]
+  topicProgress               TopicProgress[]
+  subjectQuestionProgress     SubjectQuestionProgress[]
 }
 
 model Handles {
@@ -146,8 +147,11 @@ model RevisionTopic {
   title   String
   content String
   order   Int    @default(0)
+  slug    String @default("")
 
-  progress TopicProgress[]
+  progress  TopicProgress[]
+  questions SubjectQuestion[]
+  @@unique([subject, slug])
 }
 
 model TopicProgress {
@@ -159,4 +163,39 @@ model TopicProgress {
   topic RevisionTopic @relation(fields: [topicId], references: [id])
 
   @@id([userId, topicId])
+}
+
+model SubjectQuestion {
+  id              String   @id @default(cuid())
+  topicId         String
+  type            String
+  question        String
+  difficulty      String
+  frequency       String
+  companies       String[]
+  interviewerNote String?
+  options         String[]
+  correctOption   Int?
+  explanation     String?
+  order           Int      @default(0)
+
+  topic    RevisionTopic             @relation(fields: [topicId], references: [id])
+  progress SubjectQuestionProgress[]
+}
+
+model SubjectQuestionProgress {
+  userId         String
+  questionId     String
+  status         String    @default("NOT_STARTED")
+  bookmarked     Boolean   @default(false)
+  attempted      Boolean   @default(false)
+  selectedOption Int?
+  isCorrect      Boolean?
+  attemptedAt    DateTime?
+  lastRevisedAt  DateTime?
+
+  user     User            @relation(fields: [userId], references: [id])
+  question SubjectQuestion @relation(fields: [questionId], references: [id])
+
+  @@id([userId, questionId])
 }
