@@ -8,7 +8,9 @@
   "start": "next start",
   "lint": "next eslint",
   "fix-slugs": "ts-node --project prisma/tsconfig.json prisma/fix-slugs.ts",
-  "seed-questions": "ts-node --project prisma/tsconfig.json prisma/seed-questions.ts"
+  "seed-questions": "ts-node --project prisma/tsconfig.json prisma/seed-questions.ts",
+  "check-questions": "ts-node --project prisma/tsconfig.json prisma/check-questions.ts",
+  "seed-missing": "ts-node --project prisma/tsconfig.json prisma/seed-missing-questions.ts"
 },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
