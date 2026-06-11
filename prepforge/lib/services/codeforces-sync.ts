@@ -53,26 +53,29 @@ export async function syncCodeforcesData(
     }
 
     // Upsert ContestStats
-    await prisma.contestStats.upsert({
-      where: {
-        id: existing?.id ?? "",
-      },
-      update: {
-        currentRating: user.rating ?? 0,
-        maxRating: user.maxRating ?? 0,
-        contestCount: history.length,
-        lastSyncedAt: new Date(),
-      },
-      create: {
-        userId,
-        platform: "codeforces",
-        currentRating: user.rating ?? 0,
-        maxRating: user.maxRating ?? 0,
-        contestCount: history.length,
-        lastSyncedAt: new Date(),
-      },
-    });
-
+    
+if (existing) {
+  await prisma.contestStats.update({
+    where: { id: existing.id },
+    data: {
+      currentRating: user.rating ?? 0,
+      maxRating: user.maxRating ?? 0,
+      contestCount: history.length,
+      lastSyncedAt: new Date(),
+    },
+  });
+} else {
+  await prisma.contestStats.create({
+    data: {
+      userId,
+      platform: "codeforces",
+      currentRating: user.rating ?? 0,
+      maxRating: user.maxRating ?? 0,
+      contestCount: history.length,
+      lastSyncedAt: new Date(),
+    },
+  });
+}
     // Insert ContestHistory — skip duplicates
     let contestsSynced = 0;
 

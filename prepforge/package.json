@@ -10,7 +10,8 @@
   "fix-slugs": "ts-node --project prisma/tsconfig.json prisma/fix-slugs.ts",
   "seed-questions": "ts-node --project prisma/tsconfig.json prisma/seed-questions.ts",
   "check-questions": "ts-node --project prisma/tsconfig.json prisma/check-questions.ts",
-  "seed-missing": "ts-node --project prisma/tsconfig.json prisma/seed-missing-questions.ts"
+  "seed-missing": "ts-node --project prisma/tsconfig.json prisma/seed-missing-questions.ts",
+  "fix-ratings": "ts-node --project prisma/tsconfig.json prisma/fix-zero-ratings.ts"
 },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

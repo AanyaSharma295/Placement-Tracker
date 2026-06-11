@@ -195,7 +195,7 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/dashboard");
+      const res = await fetch("/api/dashboard", { cache: "no-store" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to load dashboard.");
       setData(json);
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
   async function fetchInterviewStats() {
     try {
-      const res = await fetch("/api/dashboard/interview-stats");
+      const res = await fetch("/api/dashboard/interview-stats", { cache: "no-store" });
       const json = await res.json();
       if (res.ok) setInterviewStats(json);
     } catch (e) {
