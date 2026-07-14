@@ -3,6 +3,14 @@
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 
+type XPBreakdown = {
+  leetcode: number;
+  codeforces: number;
+  companyQuestions: number;
+  revisionTopics: number;
+  total: number;
+};
+
 export default function ProfilePage() {
   const { user } = useUser();
   const [handles, setHandles] = useState({
@@ -14,6 +22,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState("");
+
+  const [xp, setXp] = useState<XPBreakdown | null>(null);
+  const [xpLoading, setXpLoading] = useState(true);
 
   useEffect(() => {
     const fetchHandles = async () => {
@@ -35,6 +46,23 @@ export default function ProfilePage() {
       }
     };
     fetchHandles();
+  }, []);
+
+  useEffect(() => {
+    const fetchXP = async () => {
+      try {
+        const res = await fetch("/api/profile/xp");
+        const data = await res.json();
+        if (res.ok) {
+          setXp(data);
+        }
+      } catch {
+        console.error("Failed to fetch XP");
+      } finally {
+        setXpLoading(false);
+      }
+    };
+    fetchXP();
   }, []);
 
   const handleSubmit = async () => {
@@ -102,11 +130,11 @@ export default function ProfilePage() {
 
       {/* Top bar */}
       <div className="absolute top-4 right-4">
-        <UserButton afterSignOutUrl="/" />
+        <UserButton />
       </div>
 
       {/* Header */}
-      <div className="mb-8 text-center">
+      <div className="mb-4 text-center">
         <h1 className="text-3xl font-bold mb-1">Your Profile</h1>
         <p className="text-gray-400">
           Welcome, {user?.firstName ?? "there"}! Connect the platforms you use.
@@ -114,6 +142,23 @@ export default function ProfilePage() {
         <p className="text-gray-600 text-sm mt-1">
           All fields are optional — fill in only what you use.
         </p>
+      </div>
+
+      {/* XP Display */}
+      <div className="mb-8 bg-gray-800 rounded-2xl px-8 py-4 text-center">
+        {xpLoading ? (
+          <p className="text-gray-500 text-sm">Loading XP...</p>
+        ) : xp ? (
+          <>
+            <p className="text-3xl font-bold text-purple-400">{xp.total.toLocaleString()} XP</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {xp.leetcode} LeetCode · {xp.codeforces} Contests · {xp.companyQuestions} Companies ·{" "}
+              {xp.revisionTopics} Revision
+            </p>
+          </>
+        ) : (
+          <p className="text-gray-500 text-sm">Couldn't load XP</p>
+        )}
       </div>
 
       {/* Form */}
