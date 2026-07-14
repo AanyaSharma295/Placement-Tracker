@@ -2,52 +2,54 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0a0a18] text-white flex flex-col items-center justify-center px-4 py-16">
 
-      {/* Logo + Name */}
-      <h1 className="text-5xl font-bold text-white mb-2">
-        Prep<span className="text-blue-500">Forge</span>
-      </h1>
+      {/* Hero: text + illustration side by side */}
+      <div className="w-full max-w-5xl flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16">
 
-      <p className="text-gray-400 text-lg mb-10">
-        Track. Practice. Revise. Get Placed.
-      </p>
+        {/* Left: copy */}
+        <div className="flex-1 text-center lg:text-left">
+          <h1 className="text-5xl font-bold text-white mb-2">
+            Prep<span className="text-[#8B5CF6]">Forge</span>
+          </h1>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4 mb-10 max-w-md w-full">
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-blue-400">4</p>
-          <p className="text-gray-400 text-sm">Platforms Tracked</p>
+          <p className="text-2xl font-semibold text-gray-100 mb-3">
+            From first problem to first offer.
+          </p>
+
+          <p className="text-[#6b6b85] text-base leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
+            Master DSA • Revise Core CS • Practice Company Questions • Track Your Progress
+          </p>
+
+          <div className="flex gap-4 justify-center lg:justify-start">
+            <Link
+              href="/sign-up"
+              className="text-white font-medium px-6 py-3 rounded-lg transition hover:opacity-90"
+              style={{ background: "#8B5CF6" }}
+            >
+              Get Started
+            </Link>
+
+            <button
+              className="font-medium px-6 py-3 rounded-lg transition hover:bg-white/5"
+              style={{
+                border: "1px solid #8B5CF630",
+                color: "#b8b8c8",
+              }}
+            >
+              Learn More
+            </button>
+          </div>
         </div>
 
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-green-400">9+</p>
-          <p className="text-gray-400 text-sm">Companies</p>
+        {/* Right: illustration */}
+        <div className="flex-1 flex justify-center">
+          <img
+            src="/hero-illustration.svg"
+            alt="Two developers pair programming"
+            className="w-full max-w-sm lg:max-w-md"
+          />
         </div>
-
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-purple-400">7</p>
-          <p className="text-gray-400 text-sm">XP Levels</p>
-        </div>
-
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-yellow-400">∞</p>
-          <p className="text-gray-400 text-sm">Consistency</p>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex gap-4">
-        <Link
-          href="/sign-up"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition"
-        >
-          Get Started
-        </Link>
-
-        <button className="border border-gray-600 hover:border-gray-400 text-gray-300 font-medium px-6 py-3 rounded-lg transition">
-          Learn More
-        </button>
       </div>
 
     </div>

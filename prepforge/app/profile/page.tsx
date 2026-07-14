@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 type XPBreakdown = {
   leetcode: number;
@@ -128,10 +128,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 relative">
 
-      {/* Top bar */}
-      <div className="absolute top-4 right-4">
-        <UserButton />
-      </div>
+
 
       {/* Header */}
       <div className="mb-4 text-center">
