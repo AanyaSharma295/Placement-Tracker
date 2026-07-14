@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { calculateUserXP } from "@/lib/services/xp";
 
 export async function GET() {
   try {
@@ -75,6 +76,9 @@ export async function GET() {
     const cfRating = cfStats?.currentRating ?? 0;
     const lcSolved = lc?.totalSolved ?? 0;
     const progressScore = Math.round(cfRating / 10) + lcSolved;
+
+    // ── XP ────────────────────────────────────────────────────────────
+    const xp = await calculateUserXP(user.id);
 
     // ── Insights ──────────────────────────────────────────────────────
     const insights: string[] = [];
@@ -150,6 +154,7 @@ export async function GET() {
         hard: lc?.hard ?? 0,
         lastSyncedAt: lastLcSync,
       },
+      xp,
       summary: {
         totalContests,
         progressScore,

@@ -37,6 +37,14 @@ interface InterviewStats {
   overallReadiness: number;
 }
 
+interface XPBreakdown {
+  leetcode: number;
+  codeforces: number;
+  companyQuestions: number;
+  revisionTopics: number;
+  total: number;
+}
+
 interface DashboardData {
   user: { name: string; email: string; image: string };
   handles: {
@@ -59,6 +67,7 @@ interface DashboardData {
     hard: number;
     lastSyncedAt: string | null;
   };
+  xp: XPBreakdown;
   summary: {
     totalContests: number;
     progressScore: number;
@@ -284,7 +293,7 @@ export default function Dashboard() {
 
   if (!data) return null;
 
-  const { handles, codeforces, leetcode, summary, activity, insights } = data;
+  const { handles, codeforces, leetcode, summary, activity, insights, xp } = data;
 
   const firstName =
     clerkUser?.firstName?.trim() ||
@@ -354,9 +363,21 @@ export default function Dashboard() {
                 {getGreeting()}
                 {firstName ? `, ${firstName}` : ""} 👋
               </p>
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                PrepForge Dashboard
-              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                  PrepForge Dashboard
+                </h1>
+                <span
+                  className="text-xs font-bold px-3 py-1 rounded-full flex-shrink-0"
+                  style={{
+                    background: `${PF_PURPLE}15`,
+                    color: PF_PURPLE,
+                    border: `1px solid ${PF_PURPLE}30`,
+                  }}
+                >
+                  ⚡ {xp.total.toLocaleString()} XP
+                </span>
+              </div>
               <p className="text-[#6b6b85] text-sm mt-1">{getMotivation()}</p>
             </div>
           </div>
