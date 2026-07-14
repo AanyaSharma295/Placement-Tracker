@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next eslint",
-  "fix-slugs": "ts-node --project prisma/tsconfig.json prisma/fix-slugs.ts",
-  "seed-questions": "ts-node --project prisma/tsconfig.json prisma/seed-questions.ts",
-  "check-questions": "ts-node --project prisma/tsconfig.json prisma/check-questions.ts",
-  "seed-missing": "ts-node --project prisma/tsconfig.json prisma/seed-missing-questions.ts",
-  "fix-ratings": "ts-node --project prisma/tsconfig.json prisma/fix-zero-ratings.ts"
-},
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next eslint",
+    "fix-slugs": "ts-node --project prisma/tsconfig.json prisma/fix-slugs.ts",
+    "seed-questions": "ts-node --project prisma/tsconfig.json prisma/seed-questions.ts",
+    "check-questions": "ts-node --project prisma/tsconfig.json prisma/check-questions.ts",
+    "seed-missing": "ts-node --project prisma/tsconfig.json prisma/seed-missing-questions.ts",
+    "fix-ratings": "ts-node --project prisma/tsconfig.json prisma/fix-zero-ratings.ts"
+  },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
@@ -21,6 +21,7 @@
     "@prisma/client": "^5.19.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "geist": "^1.7.2",
     "lucide-react": "^1.17.0",
     "next": "14.2.7",
     "prisma": "^5.19.3",
