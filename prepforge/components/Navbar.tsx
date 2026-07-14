@@ -9,6 +9,7 @@ import {
   BookOpen,
   Trophy,
   User,
+  Calendar,
   ChevronDown,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -50,6 +51,7 @@ const NAV_ITEMS = [
 function getActiveColor(href: string) {
   if (href === "/companies") return { bg: "#3B82F615", color: "#3B82F6" };
   if (href === "/subjects") return { bg: "#6366F115", color: "#6366F1" };
+  if (href === "/contest/calendar") return { bg: "#8B5CF615", color: "#8B5CF6" };
   return { bg: "#8B5CF615", color: "#8B5CF6" };
 }
 
@@ -80,7 +82,9 @@ export default function Navbar() {
     return null;
   }
 
-  const contestActive = pathname?.startsWith("/contest");
+  const contestActive =
+    pathname?.startsWith("/contest") && pathname !== "/contest/calendar";
+  const calendarActive = pathname === "/contest/calendar";
 
   return (
     <nav
@@ -180,11 +184,22 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Calendar — standalone, next to Contests */}
+            <Link
+              href="/contest/calendar"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                ${calendarActive ? "text-white" : "text-[#6b6b85] hover:text-white hover:bg-white/5"}`}
+              style={calendarActive ? { background: "#8B5CF615", color: "#8B5CF6" } : {}}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              Calendar
+            </Link>
           </div>
 
           {/* Right: User */}
           <div className="flex items-center gap-3">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </div>
 
@@ -230,6 +245,17 @@ export default function Navbar() {
               </Link>
             )
           )}
+
+          {/* Mobile Calendar */}
+          <Link
+            href="/contest/calendar"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
+              ${calendarActive ? "text-white" : "text-[#6b6b85] hover:text-white"}`}
+            style={calendarActive ? { background: "#8B5CF615", color: "#8B5CF6" } : {}}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            Calendar
+          </Link>
         </div>
       </div>
     </nav>
