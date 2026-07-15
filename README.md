@@ -4,7 +4,7 @@
 
 PrepForge is a full-stack placement preparation platform built for competitive programmers and software engineering aspirants. It aggregates your coding activity across platforms like Codeforces and LeetCode into a single unified dashboard — giving you real-time insights into your preparation progress, contest history, problem-solving patterns, and performance trends.
 
-**Live:** [your-vercel-url-here]
+**Live:** https://placement-tracker-six-ebon.vercel.app/
 
 ---
 
