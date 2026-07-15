@@ -25,6 +25,7 @@ export async function syncCodeforcesData(
 
     const isStale =
       !existing?.lastSyncedAt ||
+      existing.handle !== handle ||
       Date.now() - existing.lastSyncedAt.getTime() > STALE_THRESHOLD_MS;
 
     if (!isStale) {
@@ -53,29 +54,31 @@ export async function syncCodeforcesData(
     }
 
     // Upsert ContestStats
-    
-if (existing) {
-  await prisma.contestStats.update({
-    where: { id: existing.id },
-    data: {
-      currentRating: user.rating ?? 0,
-      maxRating: user.maxRating ?? 0,
-      contestCount: history.length,
-      lastSyncedAt: new Date(),
-    },
-  });
-} else {
-  await prisma.contestStats.create({
-    data: {
-      userId,
-      platform: "codeforces",
-      currentRating: user.rating ?? 0,
-      maxRating: user.maxRating ?? 0,
-      contestCount: history.length,
-      lastSyncedAt: new Date(),
-    },
-  });
-}
+    if (existing) {
+      await prisma.contestStats.update({
+        where: { id: existing.id },
+        data: {
+          handle,
+          currentRating: user.rating ?? 0,
+          maxRating: user.maxRating ?? 0,
+          contestCount: history.length,
+          lastSyncedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.contestStats.create({
+        data: {
+          userId,
+          platform: "codeforces",
+          handle,
+          currentRating: user.rating ?? 0,
+          maxRating: user.maxRating ?? 0,
+          contestCount: history.length,
+          lastSyncedAt: new Date(),
+        },
+      });
+    }
+
     // Insert ContestHistory — skip duplicates
     let contestsSynced = 0;
 

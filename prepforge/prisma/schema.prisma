@@ -56,6 +56,7 @@ model ContestStats {
   id            String    @id @default(cuid())
   userId        String
   platform      String
+  handle        String?
   currentRating Int
   maxRating     Int
   contestCount  Int
@@ -67,6 +68,7 @@ model ContestStats {
 model LeetcodeStats {
   id          String   @id @default(cuid())
   userId      String   @unique
+  handle      String?
   easy        Int      @default(0)
   medium      Int      @default(0)
   hard        Int      @default(0)

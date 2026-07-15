@@ -26,6 +26,7 @@ export async function syncLeetCodeData(
 
     const isStale =
       !existing?.updatedAt ||
+      existing.handle !== handle ||
       Date.now() - existing.updatedAt.getTime() > STALE_THRESHOLD_MS;
 
     if (!isStale) {
@@ -56,6 +57,7 @@ export async function syncLeetCodeData(
     await prisma.leetcodeStats.upsert({
       where: { userId },
       update: {
+        handle,
         easy: user.easySolved,
         medium: user.mediumSolved,
         hard: user.hardSolved,
@@ -63,6 +65,7 @@ export async function syncLeetCodeData(
       },
       create: {
         userId,
+        handle,
         easy: user.easySolved,
         medium: user.mediumSolved,
         hard: user.hardSolved,
